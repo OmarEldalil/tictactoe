@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="tictactoe.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Tic Tac Toe Game</title>
+</head>
+
+<body class="flex-center">
+<div id="app">
+    <div class="flex-space-between">
+        <h4>Current Player is: {{currentPlayer}}</h4>
+        <button @click="undoMovement($event)">Undo</button>
+    </div>
+
+    <div>
+        <div class="board-row" :id="row" v-for="(field,row) of fields">
+            <button class="square" v-for="(val,col) of field" @click='handleChange($event,row,col)'>{{val}}</button>
+        </div>
+    </div>
+</div>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            boardLength:3,
+            fields: [['', '', ''], ['', '', ''], ['', '', '']],
+            currentPlayer: "X",
+            moves: []
+        },
+        methods: {
+            handleChange(e, row, col) {
+                if (this.fields[row][col] !== '') {
+                    alert('Cannot play here');
+                    return;
+                }
+                this.fields[row][col] = this.currentPlayer;
+                this.moves.push({player: this.currentPlayer, row, col});
+                this.switchPlayer();
+                let winner = this.checkDiagonal();
+                if (winner) {
+                    return this.declareAWinner(winner);
+                }
+                winner = this.checkRows();
+                if (winner) {
+                    return this.declareAWinner(winner);
+                }
+                winner = this.checkCols();
+                if (winner) {
+                    return this.declareAWinner(winner);
+                }
+                let emptySquare = this.checkEmptySquares();
+                if (!emptySquare) {
+                    alert('Tie Game.');
+                    this.reset();
+                }
+            },
+            undoMovement(e) {
+                let lastMove = this.moves.pop();
+                console.log(lastMove);
+                if (lastMove) {
+                    this.fields[lastMove.row][lastMove.col] = '';
+                    this.switchPlayer();
+                }else{
+                    alert('No Plays To Undo');
+                }
+            },
+            switchPlayer() {
+                this.currentPlayer = (this.currentPlayer === 'X') ? 'O' : 'X';
+            },
+            checkEmptySquares() {
+                let emptySquare = false;
+                for (let i = 0; i < this.boardLength; i++) {
+                    for (let j = 0; j < this.boardLength; j++) {
+                        if (!this.fields[i][j]) {
+                            emptySquare = true;
+                            break;
+                        }
+                    }
+                    if (emptySquare) {
+                        break;
+                    }
+                }
+                return emptySquare;
+            },
+            checkRows() {
+                let winner = null;
+                for (let i = 0; i < this.boardLength; i++) {
+                    if ((this.fields[i][0] === this.fields[i][1]) &&
+                        (this.fields[i][0] === this.fields[i][2]) &&
+                        (this.fields[i][0] !== '')
+                    ) {
+                        winner = this.fields[i][0];
+                        break;
+                    }
+                }
+                return winner;
+            },
+            declareAWinner(winner) {
+                alert(`Player ${winner} Wins`);
+                this.reset()
+            },
+            checkCols() {
+                let winner = null;
+                for (let i = 0; i < this.boardLength; i++) {
+                    if ((this.fields[0][i] === this.fields[1][i]) &&
+                        (this.fields[0][i] === this.fields[2][i]) &&
+                        (this.fields[0][i] !== '')
+                    ) {
+                        winner = this.fields[0][i];
+                        break;
+                    }
+                }
+                return winner;
+            },
+            reset() {
+                for (let i = 0; i < this.boardLength; i++) {
+                    for (let j = 0; j < this.boardLength; j++) {
+                        this.fields[i][j] = ''
+                    }
+                }
+                this.moves = [];
+            },
+            checkDiagonal() {
+                if ((this.fields[0][0] === this.fields[1][1]) &&
+                    (this.fields[1][1] === this.fields[2][2]) &&
+                    (this.fields[0][0] !== '')) {
+                    return this.fields[0][0];
+                } else if (
+                    (this.fields[0][2] === this.fields[1][1]) &&
+                    (this.fields[1][1] === this.fields[2][0]) &&
+                    (this.fields[0][2] !== '')
+                ) {
+                    return this.fields[0][0];
+                } else {
+                    return null
+                }
+            }
+        },
+    })
+</script>
+</body>
+
+</html>
