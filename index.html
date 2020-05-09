@@ -10,118 +10,122 @@
 </head>
 
 <body class="flex-center">
-    <div id="app">
-        <div class="flex-space-between">
-            <h4>Current Player is: {{currentPlayer}}</h4>
-            <button @click="undoMovement($event)">Undo</button>
-        </div>
+<div id="app">
+    <div class="flex-space-between">
+        <h4>Current Player is: {{currentPlayer}}</h4>
+        <button @click="reset($event)">reset</button>
+        <button :disabled="!clickable" @click="undoMovement($event)">Undo</button>
+    </div>
 
-        <div>
-            <div class="board-row" :id="row" v-for="(field,row) of fields">
-                <button class="square" v-for="(val,col) of field" @click='handleChange($event,row,col)'>{{val}}</button>
-            </div>
+    <div>
+        <div class="board-row" :id="row" v-for="(field,row) of fields">
+            <button :disabled="!clickable" class="square" v-for="(val,col) of field"
+                    @click='handleChange($event,row,col)'>{{val}}
+            </button>
         </div>
     </div>
-    <script>
-        const app = new Vue({
-            el: "#app",
-            data: {
-                boardLength: 3,
-                fields: [['', '', ''], ['', '', ''], ['', '', '']],
-                currentPlayer: "X",
-                moves: [],
-                numberOfPlays: 0
-            },
-            methods: {
-                handleChange(e, row, col) {
-                    if (this.fields[row][col] !== '') {
-                        alert('Cannot play here');
-                        return;
-                    }
-                    this.numberOfPlays++;
-                    this.fields[row][col] = this.currentPlayer;
-                    this.moves.push({ player: this.currentPlayer, row, col });
-                    this.switchPlayer();
-                    let winner = this.checkDiagonal() || this.checkRows() || this.checkCols();
-                    if (winner) {
-                        return this.declareAWinner(winner);
-                    }
-                    if (this.numberOfPlays === this.boardLength ** 2) {
-                        alert('Tie Game.');
-                        this.reset();
-                    }
-                },
-                undoMovement(e) {
-                    let lastMove = this.moves.pop();
-                    console.log(lastMove);
-                    if (lastMove) {
-                        this.fields[lastMove.row][lastMove.col] = '';
-                        this.numberOfPlays--;
-                        this.switchPlayer();
-                    } else {
-                        alert('No Plays To Undo');
-                    }
-                },
-                switchPlayer() {
-                    this.currentPlayer = (this.currentPlayer === 'X') ? 'O' : 'X';
-                },
-                checkRows() {
-                    let winner = null;
-                    for (let i = 0; i < this.boardLength; i++) {
-                        if ((this.fields[i][0] === this.fields[i][1]) &&
-                            (this.fields[i][0] === this.fields[i][2]) &&
-                            (this.fields[i][0] !== '')
-                        ) {
-                            winner = this.fields[i][0];
-                            break;
-                        }
-                    }
-                    return winner;
-                },
-                declareAWinner(winner) {
-                    alert(`Player ${winner} Wins`);
-                    this.reset()
-                },
-                checkCols() {
-                    let winner = null;
-                    for (let i = 0; i < this.boardLength; i++) {
-                        if ((this.fields[0][i] === this.fields[1][i]) &&
-                            (this.fields[0][i] === this.fields[2][i]) &&
-                            (this.fields[0][i] !== '')
-                        ) {
-                            winner = this.fields[0][i];
-                            break;
-                        }
-                    }
-                    return winner;
-                },
-                reset() {
-                    for (let i = 0; i < this.boardLength; i++) {
-                        for (let j = 0; j < this.boardLength; j++) {
-                            this.fields[i][j] = ''
-                            this.numberOfPlays = 0;
-                        }
-                    }
-                    this.moves = [];
-                },
-                checkDiagonal() {
-                    if ((this.fields[0][0] === this.fields[1][1]) &&
-                        (this.fields[1][1] === this.fields[2][2]) &&
-                        (this.fields[0][0] !== '')) {
-                        return this.fields[0][0];
-                    } else if (
-                        (this.fields[0][2] === this.fields[1][1]) &&
-                        (this.fields[1][1] === this.fields[2][0]) &&
-                        (this.fields[0][2] !== '')
-                    ) {
-                        return this.fields[0][0];
-                    } else {
-                        return null
-                    }
+</div>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            boardLength: 3,
+            fields: [['', '', ''], ['', '', ''], ['', '', '']],
+            currentPlayer: "X",
+            moves: [],
+            numberOfPlays: 0,
+            clickable: true
+        },
+        methods: {
+            handleChange(e, row, col) {
+                if (this.fields[row][col] !== '') {
+                    alert('Cannot play here');
+                    return;
+                }
+                this.numberOfPlays++;
+                this.fields[row][col] = this.currentPlayer;
+                this.moves.push({player: this.currentPlayer, row, col});
+                this.switchPlayer();
+                let winner = this.checkDiagonal() || this.checkRows() || this.checkCols();
+                if (winner) {
+                    return this.declareAWinner(winner);
+                }
+                if (this.numberOfPlays === this.boardLength ** 2) {
+                    alert('Tie Game.');
+                    this.reset();
                 }
             },
-        })
-    </script>
+            undoMovement(e) {
+                let lastMove = this.moves.pop();
+                if (lastMove) {
+                    this.fields[lastMove.row][lastMove.col] = '';
+                    this.numberOfPlays--;
+                    this.switchPlayer();
+                } else {
+                    alert('No Plays To Undo');
+                }
+            },
+            switchPlayer() {
+                this.currentPlayer = (this.currentPlayer === 'X') ? 'O' : 'X';
+            },
+            checkRows() {
+                let winner = null;
+                for (let i = 0; i < this.boardLength; i++) {
+                    if ((this.fields[i][0] === this.fields[i][1]) &&
+                        (this.fields[i][0] === this.fields[i][2]) &&
+                        (this.fields[i][0] !== '')
+                    ) {
+                        winner = this.fields[i][0];
+                        break;
+                    }
+                }
+                return winner;
+            },
+            declareAWinner(winner) {
+                alert(`Player ${winner} Wins`);
+                this.clickable = false;
+            },
+            checkCols() {
+                let winner = null;
+                for (let i = 0; i < this.boardLength; i++) {
+                    if ((this.fields[0][i] === this.fields[1][i]) &&
+                        (this.fields[0][i] === this.fields[2][i]) &&
+                        (this.fields[0][i] !== '')
+                    ) {
+                        winner = this.fields[0][i];
+                        break;
+                    }
+                }
+                return winner;
+            },
+            reset() {
+                this.fields = [['', '', ''], ['', '', ''], ['', '', '']];
+                this.moves = [];
+                this.numberOfPlays = 0;
+                this.currentPlayer = this.chooseRandomPlayer();
+                this.clickable = true;
+            },
+            chooseRandomPlayer() {
+                return (Math.round(Math.random()) === 0) ? 'X' : 'O';
+            },
+            checkDiagonal() {
+                if ((this.fields[0][0] === this.fields[1][1]) &&
+                    (this.fields[1][1] === this.fields[2][2]) &&
+                    (this.fields[0][0] !== '')) {
+                    return this.fields[0][0];
+                } else if (
+                    (this.fields[0][2] === this.fields[1][1]) &&
+                    (this.fields[1][1] === this.fields[2][0]) &&
+                    (this.fields[0][2] !== '')
+                ) {
+                    return this.fields[0][0];
+                } else {
+                    return null
+                }
+            }
+        },
+    })
+</script>
 </body>
 
 </html>
